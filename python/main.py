@@ -866,8 +866,8 @@ class Microphone():
         # prev_ovf_time = time.time()
         while True:
             try:
-                y = np.fromstring(self.stream.read(self.frames_per_buffer), dtype=np.int16)
-                #y = np.fromstring(self.stream.read(self.frames_per_buffer, exception_on_overflow=False), dtype=np.int16)
+                #y = np.fromstring(self.stream.read(self.frames_per_buffer), dtype=np.int16)
+                y = np.fromstring(self.stream.read(self.frames_per_buffer, exception_on_overflow=False), dtype=np.int16)
                 y = y.astype(np.float32)
                 self.callback_func(y)
             except IOError:
