@@ -80,7 +80,7 @@ class LEDController:
 class ESP8266(LEDController):
     def __init__(self, auto_detect=False,
                  mac_addr="aa-bb-cc-dd-ee-ff",
-                 ip='192.168.0.150',
+                 ip='192.168.0.200',
                  port=7778):
         """Initialize object for communicating with as ESP8266
         Parameters

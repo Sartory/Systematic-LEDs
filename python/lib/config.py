@@ -53,7 +53,7 @@ device_req_config = {"Stripless"   : None, # duh
                      "ESP8266"     : {"AUTO_DETECT": ["Auto Detect",
                                                       "Automatically detect device on network using MAC address",
                                                       "checkbox",
-                                                      True],
+                                                      False],
                                       "MAC_ADDR"   : ["Mac Address",
                                                       "Hardware address of device, used for auto-detection",
                                                       "textbox",
@@ -61,7 +61,7 @@ device_req_config = {"Stripless"   : None, # duh
                                       "UDP_IP"     : ["IP Address",
                                                       "IP address of device, used if auto-detection isn't active",
                                                       "textbox",
-                                                      "xxx.xxx.xxx.xxx"],
+                                                      "192.168.0.112"],
                                       "UDP_PORT"   : ["Port",
                                                       "Port used to communicate with device",
                                                       "textbox-int",
@@ -96,7 +96,7 @@ device_gen_config = {"NAME"         : ["Name",
                      "N_PIXELS"     : ["No. of LEDs",
                                        "Number of LEDs on this strip",
                                        "textbox-int",
-                                       "100"],
+                                       "120"],
                      "N_FFT_BINS"   : ["No. of FFT Bins",
                                        "Number of frequency bins to use when transforming audio to frequency domain",
                                        "textbox-int",
@@ -112,7 +112,7 @@ device_gen_config = {"NAME"         : ["Name",
                      }
 
 # Default general config for any new device
-default_general_config = {"N_PIXELS": 100,                            # Number of pixels in the LED strip (must match ESP8266 firmware)
+default_general_config = {"N_PIXELS": 120,                            # Number of pixels in the LED strip (must match ESP8266 firmware)
                           "N_FFT_BINS": 24,                           # Number of frequency bins to use when transforming audio to frequency domain
                           "MIN_FREQUENCY": 20,                        # Frequencies below this value will be removed during audio processing
                           "MAX_FREQUENCY": 18000,                     # Frequencies above this value will be removed during audio processing
