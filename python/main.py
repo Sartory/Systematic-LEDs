@@ -1767,9 +1767,11 @@ If you have any questions, feel free to open an issue on the GitHub page.
         # brightness slider
         def brightness_slider_change(tick):
             brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
+            #config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
             t = 'Brightness: {}'.format(brightness_value)
             self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
-            config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            
 
         self.board_tabs_widgets[board]["brightness_slider"] = QSlider(Qt.Horizontal)
         self.board_tabs_widgets[board]["brightness_slider"].show()
