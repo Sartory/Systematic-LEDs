@@ -1770,8 +1770,6 @@ If you have any questions, feel free to open an issue on the GitHub page.
             t = 'Brightness: {}'.format(brightness_value)
             self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
             config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
-            print(t)
-
 
         self.board_tabs_widgets[board]["brightness_slider"] = QSlider(Qt.Horizontal)
         self.board_tabs_widgets[board]["brightness_slider"].show()

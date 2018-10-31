@@ -61,7 +61,7 @@ device_req_config = {"Stripless"   : None, # duh
                                       "UDP_IP"     : ["IP Address",
                                                       "IP address of device, used if auto-detection isn't active",
                                                       "textbox",
-                                                      "192.168.0.112"],
+                                                      "192.168.0.200"],
                                       "UDP_PORT"   : ["Port",
                                                       "Port used to communicate with device",
                                                       "textbox-int",
