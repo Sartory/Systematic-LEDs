@@ -1778,17 +1778,17 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider"].setValue(200)
         self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
         self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""
-        QRangeSlider * {
+        QSlider * {
             border: 0px;
             padding: 0px;
         }
-        QRangeSlider > QSplitter::handle {
+        QSlider > QSplitter::handle {
             background: #fff;
         }
-        QRangeSlider > QSplitter::handle:vertical {
+        QSlider > QSplitter::handle:vertical {
             height: 3px;
         }
-        QRangeSlider > QSplitter::handle:pressed {
+        QSlider > QSplitter::handle:pressed {
             background: #ca5;
         }
         """)
