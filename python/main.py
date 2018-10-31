@@ -13,6 +13,8 @@ import lib.dsp as dsp
 import lib.melbank as melbank
 import lib.devices as devices
 import random
+#https://github.com/ColinDuquesnoy/QDarkStyleSheet
+import qdarkstyle
 from PyQt5.QtCore import QSettings
 if config.settings["configuration"]["USE_GUI"]:
     from lib.qrangeslider import QRangeSlider
@@ -1995,6 +1997,7 @@ if config.settings["configuration"]["USE_GUI"]:
     # Create GUI window
     app = QApplication([])
     app.setApplicationName('Visualization')
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     gui = GUI()
     app.processEvents()
 
