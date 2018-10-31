@@ -889,8 +889,9 @@ class GUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.__press_pos = None
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        if config.settings["GUI_opts"]["Maximized Window"]:
+            self.setWindowFlags(Qt.FramelessWindowHint)
+            self.setAttribute(Qt.WA_TranslucentBackground)
         #self.setText("Drag me...")
         #self.setFont(QFont("Times", 50, QFont.Bold))
         # center widget on the screen
@@ -946,7 +947,10 @@ class GUI(QMainWindow):
         self.statusbar.addPermanentWidget(self.label_error, stretch=1)
         self.statusbar.addPermanentWidget(self.label_latency)
         self.statusbar.addPermanentWidget(self.label_fps)
-
+        
+        # gui Options
+        self.gui_options = {}
+        self.gui_options["Maximized Window"] = []
         # Set up board tabs widget
         self.label_boards = QLabel("LED Strips")
         self.boardsTabWidget = QTabWidget()
@@ -983,6 +987,26 @@ class GUI(QMainWindow):
     def mouseMoveEvent(self, event):
         if self.__press_pos:  # follow the mouse
             self.move(self.pos() + (event.pos() - self.__press_pos))
+            
+    def mouseDoubleClickEvent(self, event):
+        if config.settings["GUI_opts"]["Maximized Window"]:
+            self.setGeometry(QRect(
+                config.settings["GUI_opts"]["Window Position X"],
+                config.settings["GUI_opts"]["Window Position Y"],
+                config.settings["GUI_opts"]["Window Size X"],
+                config.settings["GUI_opts"]["Window Size Y"]
+                ))
+            self.setWindowFlags(self.windowFlags() & ~Qt.FramelessWindowHint)
+            self.show()
+            config.settings["GUI_opts"]["Maximized Window"] = False
+        else:
+            config.settings["GUI_opts"]["Window Size X"] = self.size().width()
+            config.settings["GUI_opts"]["Window Size Y"] = self.size().height()
+            config.settings["GUI_opts"]["Window Position X"] = self.pos().x()
+            config.settings["GUI_opts"]["Window Position Y"] = self.pos().y()
+            self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            self.showMaximized()
+            config.settings["GUI_opts"]["Maximized Window"] = True
             
     def initSetupHelper(self):
         helpstring = """
@@ -1634,6 +1658,13 @@ If you have any questions, feel free to open an issue on the GitHub page.
                     Qt.Checked if config.settings["GUI_opts"][section] else Qt.Unchecked)
             self.gui_vis_checkboxes[section].stateChanged.connect(update_visibilty_dict)
             layout.addWidget(self.gui_vis_checkboxes[section])
+        
+        for option in self.gui_options:
+            self.gui_vis_checkboxes[option] = QCheckBox(option)
+            self.gui_vis_checkboxes[option].setCheckState(
+                    Qt.Checked if config.settings["GUI_opts"][option] else Qt.Unchecked)
+            self.gui_vis_checkboxes[option].stateChanged.connect(update_visibilty_dict)
+            layout.addWidget(self.gui_vis_checkboxes[option])
         layout.addWidget(self.buttons)
         self.gui_dialogue.show()
 
