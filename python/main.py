@@ -888,6 +888,15 @@ class GUI(QMainWindow):
     """The graphical interface of the application"""
     def __init__(self):
         super().__init__()
+        self.__press_pos = None
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        #self.setText("Drag me...")
+        #self.setFont(QFont("Times", 50, QFont.Bold))
+        # center widget on the screen
+        self.adjustSize()  # update self.rect() now
+        self.move(QApplication.instance().desktop().screen().rect().center()
+                  - self.rect().center())
         self.initMainWindow()
         self.updateUIVisibleItems()
 
@@ -962,7 +971,19 @@ class GUI(QMainWindow):
         self.setCentralWidget(QWidget(self))
         self.centralWidget().setLayout(self.main_wrapper)
         self.show()
+        
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.__press_pos = event.pos()  # remember starting position
 
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.__press_pos = None
+
+    def mouseMoveEvent(self, event):
+        if self.__press_pos:  # follow the mouse
+            self.move(self.pos() + (event.pos() - self.__press_pos))
+            
     def initSetupHelper(self):
         helpstring = """
 Looks like you need to connect an LED strip!\n\n
