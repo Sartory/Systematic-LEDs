@@ -3,25 +3,33 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
+/************
+ Well, then you have a choice - you can either fully disable interrupts while writing out led data by putting the line:
+
+#define FASTLED_ALLOW_INTERRUPTS 0
+before you #include <FastLED.h>. Sometimes, especially on the esp8266, you might have better luck by just tweaking the re-try attempt code with:
+
+#define FASTLED_INTERRUPT_RETRY_COUNT 1
+*************/
 #define FASTLED_ESP8266_DMA // better control for ESP8266 will output or RX pin requires fork https://github.com/coryking/FastLED
 #include "FastLED.h"
 
 /************ Network Information (CHANGE THESE FOR YOUR SETUP) ************************/
-const char* ssid = "WIFI_SSID";
-const char* password = "WIFI_PASSWORD";
+const char* ssid = "Gegenueber vom Kuenstlereingang";
+const char* password = "Orangeviolin056";
 
-const char* sensor_name = "TEST_SENSOR_HOSTNAME";
+const char* sensor_name = "HalyconTower01";
 const char* ota_password = "OTA_PASSWORD";
 
 const bool static_ip = true;
-IPAddress ip(192, 168, 1, 112);
-IPAddress gateway(192, 168, 1, 1);
+IPAddress ip(192, 168, 0, 200);
+IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 const int udp_port = 7778;
 
 /*********************************** FastLED Defintions ********************************/
-#define NUM_LEDS      250
+#define NUM_LEDS      120
 #define DATA_PIN      5
 //#define CLOCK_PIN   2
 #define CHIPSET       WS2812B
