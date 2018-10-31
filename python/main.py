@@ -208,7 +208,7 @@ class Visualizer(BoardManager):
                 self.current_freq_detects[i] = True
             else:
                 self.current_freq_detects[i] = False
-
+        
     def visualize_scroll(self, y):
         # Effect that scrolls colours corresponding to frequencies across the strip 
         y = y**4.0
@@ -248,6 +248,10 @@ class Visualizer(BoardManager):
             p = self.output
         return p
 
+    #def buttonScrollPressed(self, y):
+        #self.board_tabs_widgets[board]["opts_tabs"].setCurrentIndex(0)
+    #    self.visualize_scroll(y)
+        
     def visualize_energy(self, y):
         """Effect that expands from the center with increasing sound energy"""
         y = np.copy(y)
