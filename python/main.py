@@ -999,7 +999,12 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.gui_widgets["Graphs"].append([self.board_tabs_widgets[board]["graph_view"]])
         self.gui_widgets["Reactive Effect Buttons"].append([self.board_tabs_widgets[board]["label_reactive"], self.board_tabs_widgets[board]["reactive_button_grid_wrap"]])
         self.gui_widgets["Non Reactive Effect Buttons"].append([self.board_tabs_widgets[board]["label_non_reactive"], self.board_tabs_widgets[board]["non_reactive_button_grid_wrap"]])
-        self.gui_widgets["Frequency Range"].append([self.board_tabs_widgets[board]["label_slider"], self.board_tabs_widgets[board]["freq_slider"]])
+        self.gui_widgets["Frequency Range"].append(
+            [self.board_tabs_widgets[board]["label_slider"],
+             self.board_tabs_widgets[board]["freq_slider"],
+             self.board_tabs_widgets[board]["brightness_slider_label"],
+             self.board_tabs_widgets[board]["brightness_slider"]]
+        )
         self.gui_widgets["Effect Options"].append([self.board_tabs_widgets[board]["label_options"], self.board_tabs_widgets[board]["opts_tabs"]])
         self.updateUIVisibleItems()
 
@@ -1755,7 +1760,42 @@ If you have any questions, feel free to open an issue on the GitHub page.
             background: #ca5;
         }
         """)
+        
+        # Set up brightness slider
+        # Brightness label
+        self.board_tabs_widgets[board]["brightness_slider_label"] = QLabel("Brightness")
+        # brightness slider
+        def brightness_slider_change(tick):
+            brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
+            t = 'Brightness: {}'.format(brightness_value)
+            self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
+            config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            print(t)
 
+
+        self.board_tabs_widgets[board]["brightness_slider"] = QSlider(Qt.Horizontal)
+        self.board_tabs_widgets[board]["brightness_slider"].show()
+        self.board_tabs_widgets[board]["brightness_slider"].setMinimum(0)
+        self.board_tabs_widgets[board]["brightness_slider"].setMaximum(255)
+        self.board_tabs_widgets[board]["brightness_slider"].setPageStep(1)
+        self.board_tabs_widgets[board]["brightness_slider"].setValue(200)
+        self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
+        self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""
+        QSlider * {
+            border: 0px;
+            padding: 0px;
+        }
+        QSlider > QSplitter::handle {
+            background: #fff;
+        }
+        QSlider > QSplitter::handle:vertical {
+            height: 3px;
+        }
+        QSlider > QSplitter::handle:pressed {
+            background: #ca5;
+        }
+        """)
+        
         # Set up option tabs layout
         self.board_tabs_widgets[board]["label_options"] = QLabel("Effect Options")
         self.board_tabs_widgets[board]["opts_tabs"] = QTabWidget()
@@ -1848,6 +1888,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["non_reactive_button_grid_wrap"])
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["label_slider"])
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["freq_slider"])
+        self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["brightness_slider_label"])
+        self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["brightness_slider"])
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["label_options"])
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["opts_tabs"])
 
