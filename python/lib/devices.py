@@ -107,6 +107,8 @@ class ESP8266(LEDController):
         self._ip = ip
         self._port = port
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.last_message = ''
+        self.same_message_couter = 0
         if auto_detect:
             self.detect()
 
@@ -142,8 +144,19 @@ class ESP8266(LEDController):
             b (0 to 255): Blue value of LED
         """
         message = pixels.T.clip(0, config.settings["configuration"]["MAX_BRIGHTNESS"]).astype(np.uint8).ravel().tostring()
-        self._sock.sendto(message, (self._ip, self._port))
-
+        if(message != self.last_message):
+            self._sock.sendto(message, (self._ip, self._port))
+            if(self.same_message_couter != 0):
+                print("Skipped {} UPD packets - reseting same message counter"
+                    .format(self.same_message_couter))
+                self.same_message_couter = 0
+        elif(self.same_message_couter >= config.settings["configuration"]["FPS"]):
+                print("Skipped {} UPD packets - Counter reached FPS ({}) - reseting same message counter"
+                    .format(self.same_message_couter, config.settings["configuration"]["FPS"]))
+                self.same_message_couter = 0
+        else:
+            self.same_message_couter += 1
+        self.last_message  = message
 
 class FadeCandy(LEDController):
     def __init__(self, server='localhost:7890'):
