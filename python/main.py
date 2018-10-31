@@ -1995,7 +1995,10 @@ colour_manager = ColourManager()
 # Initialise GUI 
 if config.settings["configuration"]["USE_GUI"]:
     # Create GUI window
-    app = QApplication([])
+    if(len(sys.argv) > 1):
+        print("sys.argv: ")
+        print(sys.argv)
+    app = QApplication(sys.argv)
     app.setApplicationName('Visualization')
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     gui = GUI()
