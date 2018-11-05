@@ -1825,7 +1825,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         def brightness_slider_change(tick):
             brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
             #config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
-            config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            #config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            config.settings["configuration"]["MAX_BRIGHTNESS"]= brightness_value
             t = 'Brightness: {}'.format(brightness_value)
             self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
             
@@ -1835,7 +1836,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider"].setMinimum(0)
         self.board_tabs_widgets[board]["brightness_slider"].setMaximum(255)
         self.board_tabs_widgets[board]["brightness_slider"].setPageStep(1)
-        self.board_tabs_widgets[board]["brightness_slider"].setValue(200)
+        self.board_tabs_widgets[board]["brightness_slider"].setValue(config.settings["configuration"]["MAX_BRIGHTNESS"])
         self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
         self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""
         QSlider * {
@@ -1951,7 +1952,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["opts_tabs"])
 
 
-def update_config_dicts():
+def update_config_dicts(showConfig):
     # Updates config.settings with any values stored in settings.ini
     if settings.value("settings_dict"):
         for settings_dict in settings.value("settings_dict"):
@@ -1961,6 +1962,9 @@ def update_config_dicts():
                 except TypeError:
                     print("Error parsing settings dictionary {}".format(settings_dict))
                     pass
+        if(showConfig):
+            configList = settings.value("settings_dict")
+            print("Config list: %s" % repr(configList))
     else:
         print("Could not find settings.ini")
 
@@ -2080,8 +2084,8 @@ def microphone_update(audio_samples):
         print("No audio input. Volume below threshold. Volume: {}".format(vol))
     if config.settings["configuration"]["DISPLAY_FPS"]:
         print('FPS {:.0f} / {:.0f}'.format(fps, config.settings["configuration"]["FPS"]))
-        
-# the first called code actually starts here
+
+showConfig = False
 if(len(sys.argv) > 1):
     print("sys.argv: ")
     print(sys.argv)
@@ -2091,11 +2095,13 @@ if(len(sys.argv) > 1):
             os.remove(fileToDelete)
         except OSError as e:
             print ("Error: %s - %s." % (e.filename, e.strerror))
-
+    elif(sys.argv[1] == "-showConfig"):
+            showConfig = True
+# the first called code actually starts here
 # Load and update configuration from settings.ini
 settings = QSettings('./lib/settings.ini', QSettings.IniFormat)
 settings.setFallbacksEnabled(False)    # File only, no fallback to registry
-update_config_dicts()
+update_config_dicts(showConfig)
 
 # Initialise board(s)
 board_manager = BoardManager()
