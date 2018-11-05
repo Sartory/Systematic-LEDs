@@ -4,6 +4,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 from collections import deque
 import time
 import sys
+import os
 import pyaudio
 import numpy as np
 import lib.config  as config
@@ -2079,6 +2080,17 @@ def microphone_update(audio_samples):
         print("No audio input. Volume below threshold. Volume: {}".format(vol))
     if config.settings["configuration"]["DISPLAY_FPS"]:
         print('FPS {:.0f} / {:.0f}'.format(fps, config.settings["configuration"]["FPS"]))
+        
+# the first called code actually starts here
+if(len(sys.argv) > 1):
+    print("sys.argv: ")
+    print(sys.argv)
+    if(sys.argv[1] == "-reset"):
+        fileToDelete = "./lib/settings.ini"
+        try:
+            os.remove(fileToDelete)
+        except OSError as e:
+            print ("Error: %s - %s." % (e.filename, e.strerror))
 
 # Load and update configuration from settings.ini
 settings = QSettings('./lib/settings.ini', QSettings.IniFormat)
@@ -2094,9 +2106,6 @@ colour_manager = ColourManager()
 # Initialise GUI 
 if config.settings["configuration"]["USE_GUI"]:
     # Create GUI window
-    if(len(sys.argv) > 1):
-        print("sys.argv: ")
-        print(sys.argv)
     app = QApplication(sys.argv)
     app.setApplicationName('Visualization')
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
