@@ -141,7 +141,9 @@ class ESP8266(LEDController):
             g (0 to 255): Green value of LED
             b (0 to 255): Blue value of LED
         """
+        #message = pixels.T.clip(0, config.settings["configuration"]["MAX_BRIGHTNESS"]).astype(np.uint8).ravel().tostring()
         message = pixels.T.clip(0, config.settings["configuration"]["MAX_BRIGHTNESS"]).astype(np.uint8).ravel().tostring()
+
         self._sock.sendto(message, (self._ip, self._port))
 
 
