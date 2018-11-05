@@ -1964,7 +1964,7 @@ def update_config_dicts(showConfig):
                     pass
         if(showConfig):
             configList = settings.value("settings_dict")
-            print("Config list: %s" % repr(configList))
+            print("Config list read from lib/settings.ini: %s" % repr(configList))
     else:
         print("Could not find settings.ini")
 
