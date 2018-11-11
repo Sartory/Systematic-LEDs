@@ -835,8 +835,8 @@ class Microphone():
         #for each audio device, add to list of devices
         for i in range(0,self.numdevices):
             device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
-            if device_info["maxInputChannels"] > 1:
-                self.devices.append(device_info)
+            #if device_info["maxInputChannels"] > 1:
+            self.devices.append(device_info)
 
         if not "MIC_ID" in config.settings["mic_config"]:
             self.setDevice(self.default_device_id)
@@ -844,7 +844,19 @@ class Microphone():
             self.setDevice(config.settings["mic_config"]["MIC_ID"])
 
     def getDevices(self):
-        return self.devices
+        devicesMicrophone = []
+        for i in range(0,self.numdevices):
+            device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
+            if device_info["maxInputChannels"] > 1:
+                devicesMicrophone.append(device_info)
+        return devicesMicrophone
+        
+    def getMicroDeviceIdFromString(self, microphoneName):
+        for i in range(0,self.numdevices):
+            device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
+            if(device_info.get("name") == microphoneName):
+                return i
+        return 0
 
     def setDevice(self, device_id):
         # set device to stream from by the id of the device
@@ -1305,7 +1317,9 @@ If you have any questions, feel free to open an issue on the GitHub page.
 
     def micDialogue(self):
         def set_mic():
-            microphone.setDevice(mic_button_group.checkedId())
+            checkedMicroName = mic_button_group.checkedButton().text()
+            microDeviceId = microphone.getMicroDeviceIdFromString(checkedMicroName)
+            microphone.setDevice(microDeviceId)
             microphone.startStream()
 
         # Set up window and layout
@@ -2101,6 +2115,11 @@ if(len(sys.argv) > 1):
 # Load and update configuration from settings.ini
 settings = QSettings('./lib/settings.ini', QSettings.IniFormat)
 settings.setFallbacksEnabled(False)    # File only, no fallback to registry
+if(len(sys.argv) > 1):
+    if(sys.argv[1] == "-resetMicro" and "mic_config" in config.settings):
+        settings.setValue("mic_config/MIC_ID", 0)
+        print ("MIC_ID = 0")
+        showConfig = True
 update_config_dicts(showConfig)
 
 # Initialise board(s)
