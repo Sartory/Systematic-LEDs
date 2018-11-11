@@ -967,7 +967,31 @@ class GUI(QMainWindow):
         # gui Options
         self.gui_options = {}
         self.gui_options["Maximized Window"] = []
+        
         # Set up board tabs widget
+        self.quitButton = QPushButton("")
+        self.quitButton.setMaximumWidth(42)
+        self.quitButton.setIcon(QIcon('./lib/quit.png'))
+        self.quitButton.setIconSize(QSize(32,32))
+        self.quitButton.setStyleSheet("""
+        QPushButton * {
+            border: 0px;
+            padding: 0px;
+            background: #fff;
+        }
+        """)
+        # QPushButton > QSplitter::handle {
+        # 
+        # }
+        # QPushButton > QSplitter::handle:vertical {
+        #     height: 3px;
+        # }
+        # QPushButton > QSplitter::handle:pressed {
+        #     background: #ca5;
+        # }
+        self.quitButton.clicked.connect(self.close);
+
+        self.quitButton.setEnabled(True)
         self.label_boards = QLabel("LED Strips")
         self.boardsTabWidget = QTabWidget()
         # Dynamically set up boards tabs
@@ -980,6 +1004,7 @@ class GUI(QMainWindow):
         self.board_tabs = {}         # contains all the tabs, one for each board
         self.board_tabs_widgets = {} # contains all the widgets for each tab
 
+        self.main_wrapper.addWidget(self.quitButton)
         self.main_wrapper.addWidget(self.label_boards)
         self.main_wrapper.addWidget(self.boardsTabWidget)
         #self.setLayout(self.main_wrapper)
@@ -1082,6 +1107,14 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs[board].deleteLater()
         self.updateUIVisibleItems()
 
+    def keyPressEvent(self, event):
+        """Close application from escape key.
+
+        results in QMessageBox dialog from closeEvent, good but how/why?
+        """
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            
     def closeEvent(self, event):
         # executed when the window is being closed
         quit_msg = "Are you sure you want to exit?"
