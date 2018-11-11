@@ -934,14 +934,16 @@ class GUI(QMainWindow):
         # Set up toolbar
         #toolbar_guiDialogue.setShortcut('Ctrl+H')
         toolbar_closeButton = QAction('', self)
-        toolbar_closeButton.setIcon(QIcon('./lib/quit.png'))
-        # toolbar_closeButton.setStyleSheet("""
-        # QPushButton * {
-        #     border: 0px;
-        #     padding: 0px;
-        #     background: #fff;
-        # }
-        # """)
+        
+        closeIcon = QIcon()
+        # closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        # closeIcon.addFile("./lib/quit-rollover.png", QSize(), QIcon.Active, QIcon.Off)
+        # closeIcon.addFile("./lib/quit-active.png", QSize(), QIcon.Active, QIcon.On)
+        closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        toolbar_closeButton.setIcon(closeIcon)
+        #toolbar_closeButton.setShortcut('Cmd+Q')
+        toolbar_closeButton.setToolTip("Close application")
+        
         # QPushButton > QSplitter::handle {
         # 
         # }
@@ -963,6 +965,40 @@ class GUI(QMainWindow):
         toolbar_guiDialogue.triggered.connect(self.guiDialogue)
         toolbar_saveDialogue = QAction('Save Settings', self)
         toolbar_saveDialogue.triggered.connect(self.saveDialogue)
+        self.setStyleSheet("""
+            QToolButton {
+                border-style:1px solid;
+                border-radius: 4px;
+                border-color: #31363B;
+            }
+            QToolButton:hover {
+                background: #4D545B;
+                
+            }
+            QToolButton:!hover {
+                background: #31363B;
+            }
+            QToolButton:pressed {
+                background: #EFF0F1;
+                color:#4D545B;
+            }
+            QToolButton#toolbar_closeButton {
+                background: #AA0000;
+                color:#AA0000;
+            }
+            QPushButton{
+                qproperty-icon:url(:./lib/quit-normal.png);
+            }
+            QPushButton:hover
+            {
+                qproperty-icon:url(:./lib/quit-rollover.png);
+            }  
+            QPushButton:focus
+            {
+                qproperty-icon:url(:./lib/quit-active.png);
+            }     
+            QPushButton:focus{border-image : url(./lib/quit-active.png);} 
+        """)
         
         self.toolbar = self.addToolBar('top_toolbar')
         self.toolbar.setObjectName('top_toolbar')
@@ -1017,10 +1053,12 @@ class GUI(QMainWindow):
         
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
+            self.setCursor(Qt.SizeAllCursor)
             self.__press_pos = event.pos()  # remember starting position
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
+            self.setCursor(Qt.ArrowCursor)
             self.__press_pos = None
 
     def mouseMoveEvent(self, event):
