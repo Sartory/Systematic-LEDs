@@ -934,13 +934,7 @@ class GUI(QMainWindow):
         # Set up toolbar
         #toolbar_guiDialogue.setShortcut('Ctrl+H')
         toolbar_closeButton = QAction('', self)
-        #toolbar_closeButton = QPushButton("")
-        #toolbar_closeButton.setMaximumWidth(20)
-        icon = QIcon()
-    
-        icon.addFile('./lib/quit.png', QSize(16,16))
-        toolbar_closeButton.setIcon(icon)
-        #toolbar_closeButton.QIcon().setIconSize(QSize(16,16))
+        toolbar_closeButton.setIcon(QIcon('./lib/quit.png'))
         # toolbar_closeButton.setStyleSheet("""
         # QPushButton * {
         #     border: 0px;
@@ -959,7 +953,6 @@ class GUI(QMainWindow):
         # }
         toolbar_closeButton.triggered.connect(self.close);
         toolbar_closeButton.setEnabled(True)
-        
         toolbar_deviceDialogue = QAction('LED Strip Manager', self)
         toolbar_deviceDialogue.triggered.connect(self.deviceDialogue)
         toolbar_micDialogue = QAction('Microphone Setup', self)
@@ -998,29 +991,6 @@ class GUI(QMainWindow):
         self.gui_options["Maximized Window"] = []
         
         # Set up board tabs widget
-        # self.quitButton = QPushButton("")
-        # self.quitButton.setMaximumWidth(20)
-        # self.quitButton.setIcon(QIcon('./lib/quit.png'))
-        # self.quitButton.setIconSize(QSize(16,16))
-        # self.quitButton.setStyleSheet("""
-        # QPushButton * {
-        #     border: 0px;
-        #     padding: 0px;
-        #     background: #fff;
-        # }
-        # """)
-        # QPushButton > QSplitter::handle {
-        # 
-        # }
-        # QPushButton > QSplitter::handle:vertical {
-        #     height: 3px;
-        # }
-        # QPushButton > QSplitter::handle:pressed {
-        #     background: #ca5;
-        # }
-        # self.quitButton.clicked.connect(self.close);
-        # self.quitButton.setEnabled(True)
-        
         self.label_boards = QLabel("LED Strips")
         self.boardsTabWidget = QTabWidget()
         # Dynamically set up boards tabs
@@ -1033,7 +1003,6 @@ class GUI(QMainWindow):
         self.board_tabs = {}         # contains all the tabs, one for each board
         self.board_tabs_widgets = {} # contains all the widgets for each tab
 
-        # self.main_wrapper.addWidget(self.quitButton)
         self.main_wrapper.addWidget(self.label_boards)
         self.main_wrapper.addWidget(self.boardsTabWidget)
         #self.setLayout(self.main_wrapper)
