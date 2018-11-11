@@ -835,7 +835,6 @@ class Microphone():
         #for each audio device, add to list of devices
         for i in range(0,self.numdevices):
             device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
-            #if device_info["maxInputChannels"] > 1:
             self.devices.append(device_info)
 
         if not "MIC_ID" in config.settings["mic_config"]:
@@ -1566,6 +1565,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
                     #wGuide = QLabel(guide)
                     if wType in ["textbox", "textbox-int"]:
                         wEdit = QLineEdit()
+                        wEdit.setText(deflt)
                         wEdit.setPlaceholderText(deflt)
                         wEdit.textChanged.connect(validate_inputs)
                     elif wType == "checkbox":
@@ -1597,6 +1597,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
             #wGuide = QLabel(guide)
             if wType in ["textbox", "textbox-int"]:
                 wEdit = QLineEdit()
+                wEdit.setText(deflt)
                 wEdit.setPlaceholderText(deflt)
                 wEdit.textChanged.connect(validate_inputs)
             elif wType == "checkbox":
