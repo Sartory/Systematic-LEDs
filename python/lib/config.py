@@ -257,7 +257,7 @@ dynamic_effects_config = {"Energy":[["blur", "Blur", "float_slider", (0.1,4.0,0.
                                     ["mirror", "Mirror", "checkbox"],
                                     ["reverse", "Reverse", "checkbox"]],
                             "Fade":[["color_mode", "Color Mode", "dropdown", "gradients"],
-                                    ["roll_speed", "Fade Speed", "slider", (0,8,1)],
+                                    ["roll_speed", "Fade Speed", "slider", (1,60,1)],
                                     ["reverse", "Reverse", "checkbox"]],
                      "Calibration":[["r", "Red value", "slider", (0,255,1)],
                                     ["g", "Green value", "slider", (0,255,1)],
