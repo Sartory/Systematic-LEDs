@@ -926,6 +926,7 @@ class GUI(QMainWindow):
     def initMainWindow(self):
         # Set up window and wrapping layout
         self.setWindowTitle("Visualization")
+        self.setWindowIcon(QIcon('./lib/halcyonlogo.png'))
         # Initial window size/pos last saved if available
         settings.beginGroup("MainWindow")
         if settings.value("geometry"):
