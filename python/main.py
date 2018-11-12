@@ -119,10 +119,12 @@ class Visualizer(BoardManager):
                         "Calibration": self.visualize_calibration}
         # List of all the visualisation effects that aren't audio reactive.
         # These will still display when no music is playing.
+        self.visualize_Couter = 0
         self.non_reactive_effects = ["Single", "Gradient", "Fade", "Calibration"]
         # Setup for frequency detection algorithm
         self.freq_channel_history = 40
         self.beat_count = 0
+        
         self.freq_channels = [deque(maxlen=self.freq_channel_history) for i in range(config.settings["devices"][self.board]["configuration"]["N_FFT_BINS"])]
         self.prev_output = np.array([[0 for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])] for i in range(3)])
         self.output = np.array([[0 for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])] for i in range(3)])
@@ -506,10 +508,14 @@ class Visualizer(BoardManager):
         output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
-        colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],
-                           config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]*(-1 if config.settings["devices"][self.board]["effect_opts"]["Fade"]["reverse"] else 1),
-                           axis=1)
+        if(self.visualize_Couter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
+            colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
+                               colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],
+                               (-1 if config.settings["devices"][self.board]["effect_opts"]["Fade"]["reverse"] else 1),
+                               axis=1)
+            self.visualize_Couter = 0
+        else:
+            self.visualize_Couter = self.visualize_Couter +1
         return output
 
     def visualize_calibration(self):
@@ -934,12 +940,13 @@ class GUI(QMainWindow):
         # Set up toolbar
         #toolbar_guiDialogue.setShortcut('Ctrl+H')
         toolbar_closeButton = QAction('', self)
-        
         closeIcon = QIcon()
         # closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        #closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        closeIcon.addFile("./lib/quit-normal.png", QSize(), QIcon.Normal, QIcon.Off)
+        closeIcon.addFile("./lib/quit-rollover.png", QSize(), QIcon.Normal, QIcon.On)
         # closeIcon.addFile("./lib/quit-rollover.png", QSize(), QIcon.Active, QIcon.Off)
-        # closeIcon.addFile("./lib/quit-active.png", QSize(), QIcon.Active, QIcon.On)
-        closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        # closeIcon.addFile("./lib/quit-active.png", QSize(), QIcon.Normal, QIcon.On)
         toolbar_closeButton.setIcon(closeIcon)
         #toolbar_closeButton.setShortcut('Cmd+Q')
         toolbar_closeButton.setToolTip("Close application")
@@ -982,24 +989,14 @@ class GUI(QMainWindow):
                 background: #EFF0F1;
                 color:#4D545B;
             }
-            QToolButton#toolbar_closeButton {
-                background: #AA0000;
-                color:#AA0000;
-            }
-            QPushButton{
-                qproperty-icon:url(:./lib/quit-normal.png);
-            }
-            QPushButton:hover
-            {
-                qproperty-icon:url(:./lib/quit-rollover.png);
-            }  
-            QPushButton:focus
-            {
-                qproperty-icon:url(:./lib/quit-active.png);
-            }     
-            QPushButton:focus{border-image : url(./lib/quit-active.png);} 
         """)
-        
+        # 
+        # QPushButton:hover
+        # {
+        #     qproperty-icon:url(:./lib/quit-rollover.png);
+        #     background: #AA0000;
+        #     color:#AA0000;
+        # }  
         self.toolbar = self.addToolBar('top_toolbar')
         self.toolbar.setObjectName('top_toolbar')
         self.toolbar.setIconSize(QSize(16,16))
@@ -1835,10 +1832,28 @@ If you have any questions, feel free to open an issue on the GitHub page.
             def func():
                 config.settings["devices"][board]["configuration"]["current_effect"] = effect
                 buttons[effect].setDown(True)
+                tabWidget = self.board_tabs_widgets[board]["opts_tabs"]
+                setCurrentTab(tabWidget, effect)
             func.__name__ = effect
             return func
+            
+        def setCurrentTab(tabWidget, tabName):
+            print("set current tab {}".format(tabName))
+            for child in self.board_tabs_widgets[board]["opts_tabs"].children()[0].children():
+                if (child.objectName() == tabName):
+                    tabWidget.setCurrentIndex(tabWidget.indexOf(child))
+                    return
+            print("tab {} not found".format(tabName))
+                    
+        def _get_pyqt_objects(lines, obj, depth=0):
+            """Recursive method for get_all_objects to get Qt objects."""
+            for kid in obj.findChildren(QObject, '', Qt.FindDirectChildrenOnly):
+                lines.append('    ' * depth + repr(kid))
+                _get_pyqt_objects(lines, kid, depth + 1)
+ 
         # Where the magic happens
         for effect in board_manager.visualizers[board].effects:
+            # reactive_button_grid
             if not effect in board_manager.visualizers[board].non_reactive_effects:
                 connecting_funcs[effect] = connect_generator(effect)
                 buttons[effect] = QPushButton(effect)
@@ -1848,6 +1863,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
                 if i % grid_width == 0:
                     i = 0
                     j += 1
+            # reactive_button_grid
             else:
                 connecting_funcs[effect] = connect_generator(effect)
                 buttons[effect] = QPushButton(effect)
@@ -1954,6 +1970,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
             # Make the tab
             self.board_tabs_widgets[board]["grid_layout_widgets"][effect] = {}
             tabs[effect] = QWidget()
+            tabs[effect].setObjectName(effect)
             grid_layouts[effect] = QGridLayout()
             tabs[effect].setLayout(grid_layouts[effect])
             self.board_tabs_widgets[board]["opts_tabs"].addTab(tabs[effect],effect)
