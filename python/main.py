@@ -922,11 +922,28 @@ class GUI(QMainWindow):
                   - self.rect().center())
         self.initMainWindow()
         self.updateUIVisibleItems()
-
+               
+    def showContextMenu(self, point):
+        # show context menu
+        self.contextMenu.exec_(self.mapToGlobal(point))        
+           
     def initMainWindow(self):
         # Set up window and wrapping layout
         self.setWindowTitle("Visualization")
         self.setWindowIcon(QIcon('./lib/halcyonlogo.png'))
+        
+        # Custom context menu
+        addNodeNewAction = QAction("New", self)
+        addNodeQuitAction = QAction("Quit", self)
+        addNodeQuitAction.triggered.connect(self.close)
+        self.contextMenu = QMenu()
+        self.contextMenu.addAction(addNodeNewAction)
+        self.contextMenu.addAction(addNodeQuitAction)
+        #self.setStyleSheet("background-color:black;")
+        self.setMouseTracking(True)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+        
         # Initial window size/pos last saved if available
         settings.beginGroup("MainWindow")
         if settings.value("geometry"):
