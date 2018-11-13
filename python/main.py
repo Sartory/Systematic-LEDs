@@ -1823,9 +1823,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider_label"] = QLabel("Brightness")
         # brightness slider
         def brightness_slider_change(tick):
-            brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
+            brightness_value = tick
             #config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
-            #config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
             config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
             t = 'Brightness: {}'.format(brightness_value)
             self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
