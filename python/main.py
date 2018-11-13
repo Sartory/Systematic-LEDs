@@ -505,9 +505,40 @@ class Visualizer(BoardManager):
 
     def visualize_fade(self):
         "Fades through a multicolour gradient, non audio reactive"
-        output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
-                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
-                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
+        strip_len = int(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])
+        padding = int(strip_len/10)
+        low_color = 0
+        high_color_r = colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][strip_len//2]
+        high_color_g = colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][strip_len//2]
+        high_color_b = colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][strip_len//2]
+
+        color_rise_r = int(255//strip_len/2)
+        color_rise_g = int(255//strip_len/2)
+        color_rise_b = int(255//strip_len/2)
+        
+        output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0]-i*color_rise_r for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0]-i*color_rise_g for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0]-i*color_rise_b for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
+        
+        
+        # Apply blur to smooth the edges
+        
+        
+        # output[0, 0:strip_len - padding] = gaussian_filter1d(self.output[0, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # output[1, 0:strip_len - padding] = gaussian_filter1d(self.output[1, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # output[2, 0:strip_len - padding] = gaussian_filter1d(self.output[2, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # output[0, 0:padding] = 0
+        # output[1, 0:padding] = 0
+        # output[2, 0:padding] = 0
+        
+        
+        # output[0] = gaussian_filter1d(output[0], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # output[1] = gaussian_filter1d(output[1], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # output[2] = gaussian_filter1d(output[2], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        # 
+        # mirror
+        if config.settings["devices"][self.board]["effect_opts"]["Fade"]["mirror"]:
+            output = np.concatenate((output[:, ::-2], output[:, ::2]), axis=1)
         
         if(self.visualize_Couter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
             colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(

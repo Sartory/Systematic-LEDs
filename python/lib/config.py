@@ -178,7 +178,9 @@ default_effect_opts = {"Energy":    {"blur": 1,                       # Amount o
                                      "mirror": False,                 # Mirror gradient down central axis
                                      "reverse": False},               # Reverse movement of gradient
                        "Fade":      {"color_mode":"Spectral",         # Colour gradient to fade through
+                                     "blur": 3.0,                     # Amount of blur to apply
                                      "roll_speed": 1,                 # How fast (if at all) to fade through colours
+                                     "mirror": False,
                                      "reverse": False},               # Reverse "direction" of fade (r->g->b or r<-g<-b)
                        "Calibration":{"r": 100,                       # Red value
                                       "g": 100,                       # Green value
@@ -265,7 +267,9 @@ dynamic_effects_config = {"Energy":[["blur", "Blur", "float_slider", (0.1,4.0,0.
                                     ["mirror", "Mirror", "checkbox"],
                                     ["reverse", "Reverse", "checkbox"]],
                             "Fade":[["color_mode", "Color Mode", "dropdown", "gradients"],
+                                    ["blur", "Blur", "float_slider", (0.1,4.0,0.1)],
                                     ["roll_speed", "Fade Speed", "slider", (1,60,1)],
+                                    ["mirror", "Mirror", "checkbox"],
                                     ["reverse", "Reverse", "checkbox"]],
                      "Calibration":[["r", "Red value", "slider", (0,255,1)],
                                     ["g", "Green value", "slider", (0,255,1)],
