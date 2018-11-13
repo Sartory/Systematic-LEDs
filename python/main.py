@@ -1942,7 +1942,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider_label"] = QLabel("Brightness")
         # brightness slider
         def brightness_slider_change(tick):
-            brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
+            brightness_value = tick
             #config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
             #config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
             config.settings["configuration"]["MAX_BRIGHTNESS"]= brightness_value
@@ -1955,7 +1955,6 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider"].setMinimum(0)
         self.board_tabs_widgets[board]["brightness_slider"].setMaximum(255)
         self.board_tabs_widgets[board]["brightness_slider"].setPageStep(1)
-        print("config.settings[configuration][MAX_BRIGHTNESS] ".format(config.settings["GUI_opts"]))
         self.board_tabs_widgets[board]["brightness_slider"].setValue(config.settings["configuration"]["MAX_BRIGHTNESS"])
         self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
         self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""
@@ -2088,6 +2087,8 @@ def update_config_dicts(showConfig):
             print("Config list read from lib/settings.ini: %s" % repr(configList))
     else:
         print("Could not find settings.ini")
+    list_values = settings.value("settings_dict")
+    print("list_value: %s" % repr(list_values))
 
 def save_config_dicts():
     # saves config.settings
