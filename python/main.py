@@ -938,6 +938,7 @@ class GUI(QMainWindow):
         addNodeQuitAction.triggered.connect(self.close)
         self.contextMenu = QMenu()
         self.contextMenu.addAction(addNodeNewAction)
+        self.contextMenu.addSeparator()
         self.contextMenu.addAction(addNodeQuitAction)
         #self.setStyleSheet("background-color:black;")
         self.setMouseTracking(True)
@@ -1915,8 +1916,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["freq_slider"].setMin(0)
         self.board_tabs_widgets[board]["freq_slider"].setMax(20000)
         self.board_tabs_widgets[board]["freq_slider"].setRange(config.settings["devices"][board]["configuration"]["MIN_FREQUENCY"], config.settings["devices"][board]["configuration"]["MAX_FREQUENCY"])
-        self.board_tabs_widgets[board]["freq_slider"].setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
-        self.board_tabs_widgets[board]["freq_slider"].setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.board_tabs_widgets[board]["freq_slider"].setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #505F69, stop:1 #32414B);')
+        self.board_tabs_widgets[board]["freq_slider"].setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1464A0, stop:1 #14506E);')
         self.board_tabs_widgets[board]["freq_slider"].setDrawValues(True)
         self.board_tabs_widgets[board]["freq_slider"].endValueChanged.connect(set_freq_max)
         self.board_tabs_widgets[board]["freq_slider"].startValueChanged.connect(set_freq_min)
@@ -1926,13 +1927,13 @@ If you have any questions, feel free to open an issue on the GitHub page.
             padding: 0px;
         }
         QRangeSlider > QSplitter::handle {
-            background: #fff;
+            background: #148CD2;
         }
         QRangeSlider > QSplitter::handle:vertical {
             height: 3px;
         }
         QRangeSlider > QSplitter::handle:pressed {
-            background: #ca5;
+            background: #32414B;
         }
         """)
         
@@ -1954,6 +1955,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider"].setMinimum(0)
         self.board_tabs_widgets[board]["brightness_slider"].setMaximum(255)
         self.board_tabs_widgets[board]["brightness_slider"].setPageStep(1)
+        print("config.settings[configuration][MAX_BRIGHTNESS] ".format(config.settings["GUI_opts"]))
         self.board_tabs_widgets[board]["brightness_slider"].setValue(config.settings["configuration"]["MAX_BRIGHTNESS"])
         self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
         self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""

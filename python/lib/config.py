@@ -13,7 +13,7 @@ settings = {                                                        # All settin
                      'USE_GUI': True,                               # Whether to display the GUI
                      'DISPLAY_FPS': False,                          # Whether to print the FPS when running (can reduce performance)
                      'FPS': 60,                                     # Desired refresh rate of the visualization (frames per second)
-                     'MAX_BRIGHTNESS': 250,                         # Max brightness sent to LED strip
+                     'MAX_BRIGHTNESS': 100,                         # Max brightness sent to LED strip
                      'N_ROLLING_HISTORY': 4,                        # Number of past audio frames to include in the rolling window
                      'MIN_VOLUME_THRESHOLD': 0.001                  # No music visualization displayed if recorded audio volume below threshold
                     #'LOGARITHMIC_SCALING': True,                   # Scale frequencies logarithmically to match perceived pitch of human ear
