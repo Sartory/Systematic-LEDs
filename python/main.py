@@ -999,14 +999,14 @@ class GUI(QMainWindow):
             }
             QToolButton:hover {
                 background: #4D545B;
+                border-color: #179AE0;
                 
             }
             QToolButton:!hover {
                 background: #31363B;
             }
             QToolButton:pressed {
-                background: #EFF0F1;
-                color:#4D545B;
+                background: #232629;
             }
         """)
         # 
