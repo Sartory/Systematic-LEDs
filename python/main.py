@@ -477,9 +477,9 @@ class Visualizer(BoardManager):
         # Color channel mappings
         r = board_manager.signal_processers[self.board].r_filt.update(y - board_manager.signal_processers[self.board].common_mode.value) # same with this, no flippin clue
         r = np.array([j for i in zip(r,r) for j in i])
-        output = np.array([colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][0][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]],
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][1][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]],
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][2][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]]])
+        output = np.array([colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][0, :config.settings["devices"][self.board]["configuration"]["N_PIXELS"]]*r,
+                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][1, :config.settings["devices"][self.board]["configuration"]["N_PIXELS"]]*r,
+                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][2, :config.settings["devices"][self.board]["configuration"]["N_PIXELS"]]*r])
         return output
         
     def visualize_single(self):
