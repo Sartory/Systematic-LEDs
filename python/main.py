@@ -4,6 +4,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 from collections import deque
 import time
 import sys
+import os
 import pyaudio
 import numpy as np
 import lib.config  as config
@@ -118,10 +119,12 @@ class Visualizer(BoardManager):
                         "Calibration": self.visualize_calibration}
         # List of all the visualisation effects that aren't audio reactive.
         # These will still display when no music is playing.
+        self.visualize_Couter = 0
         self.non_reactive_effects = ["Single", "Gradient", "Fade", "Calibration"]
         # Setup for frequency detection algorithm
         self.freq_channel_history = 40
         self.beat_count = 0
+        
         self.freq_channels = [deque(maxlen=self.freq_channel_history) for i in range(config.settings["devices"][self.board]["configuration"]["N_FFT_BINS"])]
         self.prev_output = np.array([[0 for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])] for i in range(3)])
         self.output = np.array([[0 for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])] for i in range(3)])
@@ -208,7 +211,7 @@ class Visualizer(BoardManager):
                 self.current_freq_detects[i] = True
             else:
                 self.current_freq_detects[i] = False
-
+        
     def visualize_scroll(self, y):
         # Effect that scrolls colours corresponding to frequencies across the strip 
         y = y**4.0
@@ -248,6 +251,10 @@ class Visualizer(BoardManager):
             p = self.output
         return p
 
+    #def buttonScrollPressed(self, y):
+        #self.board_tabs_widgets[board]["opts_tabs"].setCurrentIndex(0)
+    #    self.visualize_scroll(y)
+        
     def visualize_energy(self, y):
         """Effect that expands from the center with increasing sound energy"""
         y = np.copy(y)
@@ -501,10 +508,14 @@ class Visualizer(BoardManager):
         output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
-        colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],
-                           config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]*(-1 if config.settings["devices"][self.board]["effect_opts"]["Fade"]["reverse"] else 1),
-                           axis=1)
+        if(self.visualize_Couter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
+            colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
+                               colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],
+                               (-1 if config.settings["devices"][self.board]["effect_opts"]["Fade"]["reverse"] else 1),
+                               axis=1)
+            self.visualize_Couter = 0
+        else:
+            self.visualize_Couter = self.visualize_Couter +1
         return output
 
     def visualize_calibration(self):
@@ -830,8 +841,7 @@ class Microphone():
         #for each audio device, add to list of devices
         for i in range(0,self.numdevices):
             device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
-            if device_info["maxInputChannels"] > 1:
-                self.devices.append(device_info)
+            self.devices.append(device_info)
 
         if not "MIC_ID" in config.settings["mic_config"]:
             self.setDevice(self.default_device_id)
@@ -839,7 +849,19 @@ class Microphone():
             self.setDevice(config.settings["mic_config"]["MIC_ID"])
 
     def getDevices(self):
-        return self.devices
+        devicesMicrophone = []
+        for i in range(0,self.numdevices):
+            device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
+            if device_info["maxInputChannels"] > 1:
+                devicesMicrophone.append(device_info)
+        return devicesMicrophone
+        
+    def getMicroDeviceIdFromString(self, microphoneName):
+        for i in range(0,self.numdevices):
+            device_info = py_audio.get_device_info_by_host_api_device_index(0,i)
+            if(device_info.get("name") == microphoneName):
+                return i
+        return 0
 
     def setDevice(self, device_id):
         # set device to stream from by the id of the device
@@ -888,12 +910,41 @@ class GUI(QMainWindow):
     """The graphical interface of the application"""
     def __init__(self):
         super().__init__()
+        self.__press_pos = None
+        if config.settings["GUI_opts"]["Maximized Window"]:
+            self.setWindowFlags(Qt.FramelessWindowHint)
+            self.setAttribute(Qt.WA_TranslucentBackground)
+        #self.setText("Drag me...")
+        #self.setFont(QFont("Times", 50, QFont.Bold))
+        # center widget on the screen
+        self.adjustSize()  # update self.rect() now
+        self.move(QApplication.instance().desktop().screen().rect().center()
+                  - self.rect().center())
         self.initMainWindow()
         self.updateUIVisibleItems()
-
+               
+    def showContextMenu(self, point):
+        # show context menu
+        self.contextMenu.exec_(self.mapToGlobal(point))        
+           
     def initMainWindow(self):
         # Set up window and wrapping layout
         self.setWindowTitle("Visualization")
+        self.setWindowIcon(QIcon('./lib/halcyonlogo.png'))
+        
+        # Custom context menu
+        addNodeNewAction = QAction("New", self)
+        addNodeQuitAction = QAction("Quit", self)
+        addNodeQuitAction.triggered.connect(self.close)
+        self.contextMenu = QMenu()
+        self.contextMenu.addAction(addNodeNewAction)
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction(addNodeQuitAction)
+        #self.setStyleSheet("background-color:black;")
+        self.setMouseTracking(True)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+        
         # Initial window size/pos last saved if available
         settings.beginGroup("MainWindow")
         if settings.value("geometry"):
@@ -907,6 +958,29 @@ class GUI(QMainWindow):
 
         # Set up toolbar
         #toolbar_guiDialogue.setShortcut('Ctrl+H')
+        toolbar_closeButton = QAction('', self)
+        closeIcon = QIcon()
+        # closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        #closeIcon.addFile('./lib/quit-normal.png', QSize(), QIcon.Normal, QIcon.Off)
+        closeIcon.addFile("./lib/quit-normal.png", QSize(), QIcon.Normal, QIcon.Off)
+        closeIcon.addFile("./lib/quit-rollover.png", QSize(), QIcon.Normal, QIcon.On)
+        # closeIcon.addFile("./lib/quit-rollover.png", QSize(), QIcon.Active, QIcon.Off)
+        # closeIcon.addFile("./lib/quit-active.png", QSize(), QIcon.Normal, QIcon.On)
+        toolbar_closeButton.setIcon(closeIcon)
+        #toolbar_closeButton.setShortcut('Cmd+Q')
+        toolbar_closeButton.setToolTip("Close application")
+        
+        # QPushButton > QSplitter::handle {
+        # 
+        # }
+        # QPushButton > QSplitter::handle:vertical {
+        #     height: 3px;
+        # }
+        # QPushButton > QSplitter::handle:pressed {
+        #     background: #ca5;
+        # }
+        toolbar_closeButton.triggered.connect(self.close);
+        toolbar_closeButton.setEnabled(True)
         toolbar_deviceDialogue = QAction('LED Strip Manager', self)
         toolbar_deviceDialogue.triggered.connect(self.deviceDialogue)
         toolbar_micDialogue = QAction('Microphone Setup', self)
@@ -917,9 +991,35 @@ class GUI(QMainWindow):
         toolbar_guiDialogue.triggered.connect(self.guiDialogue)
         toolbar_saveDialogue = QAction('Save Settings', self)
         toolbar_saveDialogue.triggered.connect(self.saveDialogue)
-        
+        self.setStyleSheet("""
+            QToolButton {
+                border-style:1px solid;
+                border-radius: 4px;
+                border-color: #31363B;
+            }
+            QToolButton:hover {
+                background: #4D545B;
+                
+            }
+            QToolButton:!hover {
+                background: #31363B;
+            }
+            QToolButton:pressed {
+                background: #EFF0F1;
+                color:#4D545B;
+            }
+        """)
+        # 
+        # QPushButton:hover
+        # {
+        #     qproperty-icon:url(:./lib/quit-rollover.png);
+        #     background: #AA0000;
+        #     color:#AA0000;
+        # }  
         self.toolbar = self.addToolBar('top_toolbar')
         self.toolbar.setObjectName('top_toolbar')
+        self.toolbar.setIconSize(QSize(16,16))
+        self.toolbar.addAction(toolbar_closeButton)
         self.toolbar.addAction(toolbar_deviceDialogue)
         self.toolbar.addAction(toolbar_micDialogue)
         self.toolbar.addAction(toolbar_colourDialogue)
@@ -937,7 +1037,11 @@ class GUI(QMainWindow):
         self.statusbar.addPermanentWidget(self.label_error, stretch=1)
         self.statusbar.addPermanentWidget(self.label_latency)
         self.statusbar.addPermanentWidget(self.label_fps)
-
+        
+        # gui Options
+        self.gui_options = {}
+        self.gui_options["Maximized Window"] = []
+        
         # Set up board tabs widget
         self.label_boards = QLabel("LED Strips")
         self.boardsTabWidget = QTabWidget()
@@ -962,7 +1066,41 @@ class GUI(QMainWindow):
         self.setCentralWidget(QWidget(self))
         self.centralWidget().setLayout(self.main_wrapper)
         self.show()
+        
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.setCursor(Qt.SizeAllCursor)
+            self.__press_pos = event.pos()  # remember starting position
 
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.setCursor(Qt.ArrowCursor)
+            self.__press_pos = None
+
+    def mouseMoveEvent(self, event):
+        if self.__press_pos:  # follow the mouse
+            self.move(self.pos() + (event.pos() - self.__press_pos))
+            
+    def mouseDoubleClickEvent(self, event):
+        if config.settings["GUI_opts"]["Maximized Window"]:
+            self.setGeometry(QRect(
+                config.settings["GUI_opts"]["Window Position X"],
+                config.settings["GUI_opts"]["Window Position Y"],
+                config.settings["GUI_opts"]["Window Size X"],
+                config.settings["GUI_opts"]["Window Size Y"]
+                ))
+            self.setWindowFlags(self.windowFlags() & ~Qt.FramelessWindowHint)
+            self.show()
+            config.settings["GUI_opts"]["Maximized Window"] = False
+        else:
+            config.settings["GUI_opts"]["Window Size X"] = self.size().width()
+            config.settings["GUI_opts"]["Window Size Y"] = self.size().height()
+            config.settings["GUI_opts"]["Window Position X"] = self.pos().x()
+            config.settings["GUI_opts"]["Window Position Y"] = self.pos().y()
+            self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            self.showMaximized()
+            config.settings["GUI_opts"]["Maximized Window"] = True
+            
     def initSetupHelper(self):
         helpstring = """
 Looks like you need to connect an LED strip!\n\n
@@ -1021,6 +1159,14 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs[board].deleteLater()
         self.updateUIVisibleItems()
 
+    def keyPressEvent(self, event):
+        """Close application from escape key.
+
+        results in QMessageBox dialog from closeEvent, good but how/why?
+        """
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            
     def closeEvent(self, event):
         # executed when the window is being closed
         quit_msg = "Are you sure you want to exit?"
@@ -1255,7 +1401,9 @@ If you have any questions, feel free to open an issue on the GitHub page.
 
     def micDialogue(self):
         def set_mic():
-            microphone.setDevice(mic_button_group.checkedId())
+            checkedMicroName = mic_button_group.checkedButton().text()
+            microDeviceId = microphone.getMicroDeviceIdFromString(checkedMicroName)
+            microphone.setDevice(microDeviceId)
             microphone.startStream()
 
         # Set up window and layout
@@ -1502,6 +1650,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
                     #wGuide = QLabel(guide)
                     if wType in ["textbox", "textbox-int"]:
                         wEdit = QLineEdit()
+                        wEdit.setText(deflt)
                         wEdit.setPlaceholderText(deflt)
                         wEdit.textChanged.connect(validate_inputs)
                     elif wType == "checkbox":
@@ -1533,6 +1682,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
             #wGuide = QLabel(guide)
             if wType in ["textbox", "textbox-int"]:
                 wEdit = QLineEdit()
+                wEdit.setText(deflt)
                 wEdit.setPlaceholderText(deflt)
                 wEdit.textChanged.connect(validate_inputs)
             elif wType == "checkbox":
@@ -1613,6 +1763,13 @@ If you have any questions, feel free to open an issue on the GitHub page.
                     Qt.Checked if config.settings["GUI_opts"][section] else Qt.Unchecked)
             self.gui_vis_checkboxes[section].stateChanged.connect(update_visibilty_dict)
             layout.addWidget(self.gui_vis_checkboxes[section])
+        
+        for option in self.gui_options:
+            self.gui_vis_checkboxes[option] = QCheckBox(option)
+            self.gui_vis_checkboxes[option].setCheckState(
+                    Qt.Checked if config.settings["GUI_opts"][option] else Qt.Unchecked)
+            self.gui_vis_checkboxes[option].stateChanged.connect(update_visibilty_dict)
+            layout.addWidget(self.gui_vis_checkboxes[option])
         layout.addWidget(self.buttons)
         self.gui_dialogue.show()
 
@@ -1694,10 +1851,28 @@ If you have any questions, feel free to open an issue on the GitHub page.
             def func():
                 config.settings["devices"][board]["configuration"]["current_effect"] = effect
                 buttons[effect].setDown(True)
+                tabWidget = self.board_tabs_widgets[board]["opts_tabs"]
+                setCurrentTab(tabWidget, effect)
             func.__name__ = effect
             return func
+            
+        def setCurrentTab(tabWidget, tabName):
+            print("set current tab {}".format(tabName))
+            for child in self.board_tabs_widgets[board]["opts_tabs"].children()[0].children():
+                if (child.objectName() == tabName):
+                    tabWidget.setCurrentIndex(tabWidget.indexOf(child))
+                    return
+            print("tab {} not found".format(tabName))
+                    
+        def _get_pyqt_objects(lines, obj, depth=0):
+            """Recursive method for get_all_objects to get Qt objects."""
+            for kid in obj.findChildren(QObject, '', Qt.FindDirectChildrenOnly):
+                lines.append('    ' * depth + repr(kid))
+                _get_pyqt_objects(lines, kid, depth + 1)
+ 
         # Where the magic happens
         for effect in board_manager.visualizers[board].effects:
+            # reactive_button_grid
             if not effect in board_manager.visualizers[board].non_reactive_effects:
                 connecting_funcs[effect] = connect_generator(effect)
                 buttons[effect] = QPushButton(effect)
@@ -1707,6 +1882,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
                 if i % grid_width == 0:
                     i = 0
                     j += 1
+            # reactive_button_grid
             else:
                 connecting_funcs[effect] = connect_generator(effect)
                 buttons[effect] = QPushButton(effect)
@@ -1740,8 +1916,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["freq_slider"].setMin(0)
         self.board_tabs_widgets[board]["freq_slider"].setMax(20000)
         self.board_tabs_widgets[board]["freq_slider"].setRange(config.settings["devices"][board]["configuration"]["MIN_FREQUENCY"], config.settings["devices"][board]["configuration"]["MAX_FREQUENCY"])
-        self.board_tabs_widgets[board]["freq_slider"].setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
-        self.board_tabs_widgets[board]["freq_slider"].setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.board_tabs_widgets[board]["freq_slider"].setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #505F69, stop:1 #32414B);')
+        self.board_tabs_widgets[board]["freq_slider"].setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1464A0, stop:1 #14506E);')
         self.board_tabs_widgets[board]["freq_slider"].setDrawValues(True)
         self.board_tabs_widgets[board]["freq_slider"].endValueChanged.connect(set_freq_max)
         self.board_tabs_widgets[board]["freq_slider"].startValueChanged.connect(set_freq_min)
@@ -1751,13 +1927,13 @@ If you have any questions, feel free to open an issue on the GitHub page.
             padding: 0px;
         }
         QRangeSlider > QSplitter::handle {
-            background: #fff;
+            background: #148CD2;
         }
         QRangeSlider > QSplitter::handle:vertical {
             height: 3px;
         }
         QRangeSlider > QSplitter::handle:pressed {
-            background: #ca5;
+            background: #32414B;
         }
         """)
         
@@ -1768,7 +1944,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         def brightness_slider_change(tick):
             brightness_value = tick#self.board_tabs_widgets[board]["brightness_slider"].tickValue()
             #config.settings["devices"][self.board]["configuration"]["MAX_BRIGHTNESS"] = brightness_value
-            config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            #config.settings["configuration"]["MAX_BRIGHTNESS"] = brightness_value
+            config.settings["configuration"]["MAX_BRIGHTNESS"]= brightness_value
             t = 'Brightness: {}'.format(brightness_value)
             self.board_tabs_widgets[board]["brightness_slider_label"].setText(t)
             
@@ -1778,7 +1955,8 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["brightness_slider"].setMinimum(0)
         self.board_tabs_widgets[board]["brightness_slider"].setMaximum(255)
         self.board_tabs_widgets[board]["brightness_slider"].setPageStep(1)
-        self.board_tabs_widgets[board]["brightness_slider"].setValue(200)
+        print("config.settings[configuration][MAX_BRIGHTNESS] ".format(config.settings["GUI_opts"]))
+        self.board_tabs_widgets[board]["brightness_slider"].setValue(config.settings["configuration"]["MAX_BRIGHTNESS"])
         self.board_tabs_widgets[board]["brightness_slider"].valueChanged.connect(brightness_slider_change)
         self.board_tabs_widgets[board]["brightness_slider"].setStyleSheet("""
         QSlider * {
@@ -1812,6 +1990,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
             # Make the tab
             self.board_tabs_widgets[board]["grid_layout_widgets"][effect] = {}
             tabs[effect] = QWidget()
+            tabs[effect].setObjectName(effect)
             grid_layouts[effect] = QGridLayout()
             tabs[effect].setLayout(grid_layouts[effect])
             self.board_tabs_widgets[board]["opts_tabs"].addTab(tabs[effect],effect)
@@ -1894,7 +2073,7 @@ If you have any questions, feel free to open an issue on the GitHub page.
         self.board_tabs_widgets[board]["wrapper"].addWidget(self.board_tabs_widgets[board]["opts_tabs"])
 
 
-def update_config_dicts():
+def update_config_dicts(showConfig):
     # Updates config.settings with any values stored in settings.ini
     if settings.value("settings_dict"):
         for settings_dict in settings.value("settings_dict"):
@@ -1904,6 +2083,9 @@ def update_config_dicts():
                 except TypeError:
                     print("Error parsing settings dictionary {}".format(settings_dict))
                     pass
+        if(showConfig):
+            configList = settings.value("settings_dict")
+            print("Config list read from lib/settings.ini: %s" % repr(configList))
     else:
         print("Could not find settings.ini")
 
@@ -2024,10 +2206,28 @@ def microphone_update(audio_samples):
     if config.settings["configuration"]["DISPLAY_FPS"]:
         print('FPS {:.0f} / {:.0f}'.format(fps, config.settings["configuration"]["FPS"]))
 
+showConfig = False
+if(len(sys.argv) > 1):
+    print("sys.argv: ")
+    print(sys.argv)
+    if(sys.argv[1] == "-reset"):
+        fileToDelete = "./lib/settings.ini"
+        try:
+            os.remove(fileToDelete)
+        except OSError as e:
+            print ("Error: %s - %s." % (e.filename, e.strerror))
+    elif(sys.argv[1] == "-showConfig"):
+            showConfig = True
+# the first called code actually starts here
 # Load and update configuration from settings.ini
 settings = QSettings('./lib/settings.ini', QSettings.IniFormat)
 settings.setFallbacksEnabled(False)    # File only, no fallback to registry
-update_config_dicts()
+if(len(sys.argv) > 1):
+    if(sys.argv[1] == "-resetMicro" and "mic_config" in config.settings):
+        settings.setValue("mic_config/MIC_ID", 0)
+        print ("MIC_ID = 0")
+        showConfig = True
+update_config_dicts(showConfig)
 
 # Initialise board(s)
 board_manager = BoardManager()
@@ -2038,9 +2238,6 @@ colour_manager = ColourManager()
 # Initialise GUI 
 if config.settings["configuration"]["USE_GUI"]:
     # Create GUI window
-    if(len(sys.argv) > 1):
-        print("sys.argv: ")
-        print(sys.argv)
     app = QApplication(sys.argv)
     app.setApplicationName('Visualization')
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
