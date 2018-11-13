@@ -110,8 +110,7 @@ class Visualizer(BoardManager):
                         "Beat":self.visualize_beat,
                         "Wave":self.visualize_wave,
                         "Bars":self.visualize_bars,
-                        #"Pulse":self.visualize_pulse,
-                        #"Pulse":self.visualize_pulse,
+                        "Pulse":self.visualize_pulse,
                         #"Auto":self.visualize_auto,
                         "Single":self.visualize_single,
                         "Fade":self.visualize_fade,
@@ -473,14 +472,14 @@ class Visualizer(BoardManager):
         config.settings["devices"][self.board]["effect_opts"]["Pulse"]["bar_length"]
         config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]
         y = np.copy(interpolate(y, config.settings["devices"][self.board]["configuration"]["N_PIXELS"] // 2))
-        common_mode.update(y) # i honestly have no idea what this is but i just work with it rather than trying to figure it out
+        board_manager.signal_processers[self.board].common_mode.update(y) # i honestly have no idea what this is but i just work with it rather than trying to figure it out
         self.prev_spectrum = np.copy(y)
         # Color channel mappings
-        r = r_filt.update(y - common_mode.value) # same with this, no flippin clue
+        r = board_manager.signal_processers[self.board].r_filt.update(y - board_manager.signal_processers[self.board].common_mode.value) # same with this, no flippin clue
         r = np.array([j for i in zip(r,r) for j in i])
-        output = np.array([colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][0][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]],
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][1][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]],
-                           colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][2][:config.settings["devices"][self.board]["configuration"]["N_PIXELS"]]])
+        output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][0][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][1][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Pulse"]["color_mode"]][2][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
         
     def visualize_single(self):
         "Displays a single colour, non audio reactive"
@@ -508,6 +507,7 @@ class Visualizer(BoardManager):
         output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
                            [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0] for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
+        
         if(self.visualize_Couter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
             colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
                                colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],

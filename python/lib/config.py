@@ -160,6 +160,10 @@ default_effect_opts = {"Energy":    {"blur": 1,                       # Amount o
                                      "s_color": "White",              # Color of sparks
                                      "mirror": True,                  # Mirror output down central axis
                                      "flip_lr":False},                # Flip output left-right
+                       "Pulse":     {"bar_color": "Purple",        # Colour gradient to display
+                                      "bar_speed": 5,                   # Initial number of sparks
+                                      "bar_length": 5,              # Color of sparks
+                                      "color_mode": "Spectral"},                # Flip output left-right
                        "Single":    {"color": "Purple"},              # Static color to show
                        "Beat":      {"color": "Red",                  # Colour of beat flash
                                      "decay": 0.7},                   # How quickly the flash fades away
@@ -242,6 +246,10 @@ dynamic_effects_config = {"Energy":[["blur", "Blur", "float_slider", (0.1,4.0,0.
                                     #["s_count", "Spark Amount", "slider", (0,config.settings["devices"][self.board]["configuration"]["N_PIXELS"]//6,1)],
                                     ["mirror", "Mirror", "checkbox"],
                                     ["flip_lr", "Flip LR", "checkbox"]],
+                            "Pulse":[["bar_color", "Bar Color", "dropdown", "colours"],
+                                    ["bar_speed", "Bar Speed", "slider", (0,9,1)],
+                                    ["bar_length", "Bar Length", "slider", (0,20,1)],
+                                    ["color_mode", "Color Mode", "dropdown", "gradients"]],
                           "Single":[["color", "Color", "dropdown", "colours"]],
                             "Beat":[["color", "Color", "dropdown", "colours"],
                                     ["decay", "Flash Decay", "float_slider", (0.3,0.98,0.005)]],
