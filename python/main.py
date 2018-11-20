@@ -118,7 +118,8 @@ class Visualizer(BoardManager):
                         "Calibration": self.visualize_calibration}
         # List of all the visualisation effects that aren't audio reactive.
         # These will still display when no music is playing.
-        self.visualize_Couter = 0
+        self.visualize_Counter = 0
+        self.breath_Counter = 0
         self.non_reactive_effects = ["Single", "Gradient", "Fade", "Calibration"]
         # Setup for frequency detection algorithm
         self.freq_channel_history = 40
@@ -501,8 +502,7 @@ class Visualizer(BoardManager):
                            axis=1)
         if config.settings["devices"][self.board]["effect_opts"]["Gradient"]["mirror"]:
             output = np.concatenate((output[:, ::-2], output[:, ::2]), axis=1)
-        return output
-
+            
     def visualize_fade(self):
         "Fades through a multicolour gradient, non audio reactive"
         strip_len = int(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])
@@ -516,38 +516,37 @@ class Visualizer(BoardManager):
         color_rise_g = int(255//strip_len/2)
         color_rise_b = int(255//strip_len/2)
         
-        output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0]-i*color_rise_r for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
-                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0]-i*color_rise_g for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
-                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0]-i*color_rise_b for i in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
+        breathKeyFrame = config.key_frames["breathing"][self.breath_Counter]
+        
+        output = np.array([[colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][0][0]*breathKeyFrame//255 for n in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][1][0]*breathKeyFrame//255 for n in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])],
+                           [colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]][2][0]*breathKeyFrame//255 for n in range(config.settings["devices"][self.board]["configuration"]["N_PIXELS"])]])
         
         
         # Apply blur to smooth the edges
-        
-        
-        # output[0, 0:strip_len - padding] = gaussian_filter1d(self.output[0, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
-        # output[1, 0:strip_len - padding] = gaussian_filter1d(self.output[1, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
-        # output[2, 0:strip_len - padding] = gaussian_filter1d(self.output[2, 0:strip_len - padding], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
-        # output[0, 0:padding] = 0
-        # output[1, 0:padding] = 0
-        # output[2, 0:padding] = 0
-        
-        
-        # output[0] = gaussian_filter1d(output[0], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
-        # output[1] = gaussian_filter1d(output[1], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
-        # output[2] = gaussian_filter1d(output[2], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        output[0] = gaussian_filter1d(output[0], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        output[1] = gaussian_filter1d(output[1], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
+        output[2] = gaussian_filter1d(output[2], sigma=config.settings["devices"][self.board]["effect_opts"]["Fade"]["blur"])
         # 
         # mirror
         if config.settings["devices"][self.board]["effect_opts"]["Fade"]["mirror"]:
             output = np.concatenate((output[:, ::-2], output[:, ::2]), axis=1)
         
-        if(self.visualize_Couter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
+        # idea: apply np.roll to different parts of the strip at differnent Times
+        # so not all leds are updated at the same time
+        # increse smooth transitions
+        if(self.visualize_Counter > config.settings["configuration"]["FPS"] - config.settings["devices"][self.board]["effect_opts"]["Fade"]["roll_speed"]):
+            if(self.breath_Counter == len(config.key_frames["breathing"])-1):
+                self.breath_Counter = 0
+            else:
+                self.breath_Counter = self.breath_Counter + 1
             colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]] = np.roll(
                                colour_manager.full_gradients[self.board][config.settings["devices"][self.board]["effect_opts"]["Fade"]["color_mode"]],
                                (-1 if config.settings["devices"][self.board]["effect_opts"]["Fade"]["reverse"] else 1),
                                axis=1)
-            self.visualize_Couter = 0
+            self.visualize_Counter = 0
         else:
-            self.visualize_Couter = self.visualize_Couter +1
+            self.visualize_Counter = self.visualize_Counter +1
         return output
 
     def visualize_calibration(self):
