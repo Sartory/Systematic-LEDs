@@ -71,6 +71,22 @@ device_req_config = { "ESP8266"    : {"AUTO_DETECT": ["Auto Detect",
                      "Stripless"   : None, # duh
                      "BlinkStick"  : None,
                      "DotStar"     : None,
+                     "PxMatrix"    : {"AUTO_DETECT": ["Auto Detect",
+                                                      "Automatically detect device on network using MAC address",
+                                                      "checkbox",
+                                                      True],
+                                      "MAC_ADDR"   : ["Mac Address",
+                                                      "Hardware address of device, used for auto-detection",
+                                                      "textbox",
+                                                      "aa-bb-cc-dd-ee-ff"],
+                                      "UDP_IP"     : ["IP Address",
+                                                      "IP address of device, used if auto-detection isn't active",
+                                                      "textbox",
+                                                      "xxx.xxx.xxx.xxx"],
+                                      "UDP_PORT"   : ["Port",
+                                                      "Port used to communicate with device",
+                                                      "textbox-int",
+                                                      "7778"]},
                      "RaspberryPi" : {"LED_PIN"    : ["LED Pin",
                                                       "GPIO pin connected to the LED strip RaspberryPi (must support PWM)",
                                                       "textbox-int",
@@ -154,7 +170,7 @@ default_effect_opts = {"Energy":    {"blur": 1,                       # Amount o
                                      "r_multiplier": 1.0,             # How much red
                                      "g_multiplier": 1.0,             # How much green
                                      "b_multiplier": 1.0,             # How much blue
-                                     "blur": 0.2},                    # Amount of blur to apply
+                                     "blur": 0.7},                    # Amount of blur to apply
                        "Power":     {"color_mode": "Spectral",        # Colour gradient to display
                                      "s_count": 20,                   # Initial number of sparks
                                      "s_color": "White",              # Color of sparks
@@ -276,7 +292,8 @@ dynamic_effects_config = {"Energy":[["blur", "Blur", "float_slider", (0.1,4.0,0.
                                     ["b", "Blue value", "slider", (0,255,1)]]}
 
 default_colours = {"Red":(255,0,0),
-                   "Orange":(255,40,0),
+                   "DeepOrange":(255,40,0),
+                   "Orange":(255,70,0),
                    "Yellow":(255,255,0),
                    "Green":(0,255,0),
                    "Blue":(0,0,255),
@@ -286,29 +303,29 @@ default_colours = {"Red":(255,0,0),
                    "White":(255,255,255),
                    "Black":(0,0,0)}
 
-default_gradients = {"Spectral": [(255, 0, 0), (255, 40, 0), (255, 255, 0), (0, 255, 0), (0, 247, 161), (0, 0, 255), (255, 0, 200), (255, 0, 178)],
+default_gradients = {"Spectral": [(255, 0, 0), (255,70,0), (255, 255, 0), (0, 255, 0), (0, 247, 161), (0, 0, 255), (255, 0, 200), (255, 0, 178)],
                      "Dancefloor": [(255, 0, 0), (255, 0, 178), (255, 0, 200), (0, 0, 255)],
-                     "Sunset": [(255, 0, 0), (255, 40, 0), (255, 255, 0)],
+                     "Sunset": [(255, 0, 0), (255,70,0), (255, 255, 0)],
                      "Ocean": [(0, 255, 0), (0, 247, 161), (0, 0, 255)],
-                     "Jungle": [(0, 255, 0), (255, 0, 0), (255, 40, 0)],
-                     "Sunny": [(255, 255, 0), (0, 247, 161), (255, 40, 0), (0, 0, 255)],
+                     "Jungle": [(0, 255, 0), (255,70,0), (255, 0, 0)],
+                     "Sunny": [(255, 255, 0), (0, 247, 161), (255,70,0), (0, 0, 255)],
                      "Fruity": [(255, 40, 0), (0, 0, 255)],
-                     "Peach": [(255, 40, 0), (255, 0, 178)],
+                     "Peach": [(255, 70, 0), (255, 0, 178)],
                      "Rust": [(255, 40, 0), (255, 0, 0)],
                      "Good Night": [(200,00,0), (240, 0, 0), (220, 40, 0), (240, 30, 0), (250,15,0), (255,10,0)]
                      }
 key_frames = { "breathing": [
-  # Rising
-  20, 21, 22, 24, 26, 28, 31, 34, 38, 41, 45, 50, 55, 60, 66, 73, 80, 87, 95,
-  103, 112, 121, 131, 141, 151, 161, 172, 182, 192, 202, 211, 220, 228, 236,
-  242, 247, 251, 254, 255,
+                    # Rising
+                    20, 21, 22, 24, 26, 28, 31, 34, 38, 41, 45, 50, 55, 60, 66, 73, 80, 87, 95,
+                    103, 112, 121, 131, 141, 151, 161, 172, 182, 192, 202, 211, 220, 228, 236,
+                    242, 247, 251, 254, 255,
 
-  # Falling
-  254, 251, 247, 242, 236, 228, 220, 211, 202, 192, 182, 172, 161, 151, 141,
-  131, 121, 112, 103, 95, 87, 80, 73, 66, 60, 55, 50, 45, 41, 38, 34, 31, 28,
-  26, 24, 22, 21, 20,
-  20, 20, 20, 20, 20, 20, 20, 20, 20, 20,]
-}
+                    # Falling
+                    254, 251, 247, 242, 236, 228, 220, 211, 202, 192, 182, 172, 161, 151, 141,
+                    131, 121, 112, 103, 95, 87, 80, 73, 66, 60, 55, 50, 45, 41, 38, 34, 31, 28,
+                    26, 24, 22, 21, 20,
+                    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,]
+                }
 
 # plz ignore
 # default_gradients = {"Spectral"  : ["Red", "Orange", "Yellow", "Green", "Light blue", "Blue", "Purple", "Pink"],
@@ -416,8 +433,10 @@ Left in for manual device control
 
 for board in settings["devices"]:
     if settings["devices"][board]["configuration"]["TYPE"] == 'ESP8266':
-        settings["devices"][board]["configuration"]["SOFTWARE_GAMMA_CORRECTION"] = False
+        settings["devices"][board]["configuration"]["SOFTWARE_GAMMA_CORRECTION"] = True
         # Set to False because the firmware handles gamma correction + dither
+    elif settings["devices"][board]["configuration"]["TYPE"] == 'PxMatrix':
+        settings["devices"][board]["configuration"]["SOFTWARE_GAMMA_CORRECTION"] = True
     elif settings["devices"][board]["configuration"]["TYPE"] == 'RaspberryPi':
         settings["devices"][board]["configuration"]["SOFTWARE_GAMMA_CORRECTION"] = True
         # Set to True because Raspberry Pi doesn't use hardware dithering

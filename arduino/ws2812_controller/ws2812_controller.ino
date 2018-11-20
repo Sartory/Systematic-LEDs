@@ -131,10 +131,15 @@ void loop() {
   int packetSize = port.parsePacket();
   if (packetSize == sizeof(leds)) {
     port.read((char*)leds, sizeof(leds));
+    Serial.printf(".");
     FastLED.show();
+    // flush the serial buffer
+    while(Serial.available()) { Serial.read(); } 
   } else if (packetSize) {
     Serial.printf("Invalid packet size: %u (expected %u)\n", packetSize, sizeof(leds));
     port.flush();
     return;
+  } else {
+    Serial.printf("~");
   }
 }
