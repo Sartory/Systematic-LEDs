@@ -16,14 +16,14 @@ before you #include <FastLED.h>. Sometimes, especially on the esp8266, you might
 #include "FastLED.h"
 
 /************ Network Information (CHANGE THESE FOR YOUR SETUP) ************************/
-const char* ssid = "Gegenueber vom Kuenstlereingang";
-const char* password = "Orangeviolin056";
+const char* ssid = "HalcyonWifi"; //"Gegenueber vom Kuenstlereingang";
+const char* password = "HalcyonPassword";//"OrangeViolin056";
 
-const char* sensor_name = "HalcyonTower01";
+const char* sensor_name = "HalcyonTower02";
 const char* ota_password = "HalcyonPassword";
 
 const bool static_ip = true;
-IPAddress ip(192, 168, 0, 200);
+IPAddress ip(192, 168, 100, 105);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
