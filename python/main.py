@@ -252,7 +252,8 @@ class Visualizer(BoardManager):
         # Update the LED strip
         #return np.concatenate((self.prev_spectrum[:, ::-speed], self.prev_spectrum), axis=1)
         if config.settings["devices"][self.board]["effect_opts"]["Scroll"]["mirror"]:
-            p = np.concatenate((self.output[:, ::-2], self.output[:, ::2]), axis=1)
+            o = np.concatenate((self.output[:, ::-2], self.output[:, ::2]), axis=1)
+            p = np.concatenate((o[:, ::-2], o[:, ::2]), axis=1)
         else:
             p = self.output
         return p
