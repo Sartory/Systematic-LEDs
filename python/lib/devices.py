@@ -162,20 +162,18 @@ class ESP8266(LEDController):
             b (0 to 255): Blue value of LED
         """
         message = pixels.T.clip(0, config.settings["configuration"]["MAX_BRIGHTNESS"]).astype(np.uint32).ravel()
+        message = _GAMMA_TABLE[message].astype(np.uint8).tostring()
+        
         if(message != self.last_message):
-            message = _GAMMA_TABLE[message].astype(np.uint8).tostring()
             self._sock.sendto(message, (self._ip, self._port))
-            # self._sock.sendto(message, (self._ip, self._port))
-            # self._sock.sendto(message, (self._ip, self._port))
-            # self._sock.sendto(message, (self._ip, self._port))
             
             if(self.same_message_couter != 0):
-                print("Skipped {} UPD packets - reseting same message counter"
-                    .format(self.same_message_couter))
+                # print("Skipped {} UPD packets - reseting same message counter"
+                #     .format(self.same_message_couter))
                 self.same_message_couter = 0
         elif(self.same_message_couter >= config.settings["configuration"]["FPS"]):
-                print("Skipped {} UPD packets - Counter reached FPS ({}) - reseting same message counter"
-                    .format(self.same_message_couter, config.settings["configuration"]["FPS"]))
+                # print("Skipped {} UPD packets - Counter reached FPS ({}) - reseting same message counter"
+                #     .format(self.same_message_couter, config.settings["configuration"]["FPS"]))
                 self.same_message_couter = 0
         else:
             self.same_message_couter += 1
